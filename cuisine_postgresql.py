@@ -1,4 +1,11 @@
-from fabric.api import cd, hide, puts, settings , sudo
+from fabric.context_managers import cd, hide, settings
+from fabric.operations import sudo
+from fabric.utils import puts
+
+
+__version__ = '0.1.0'
+__maintainer__ = u'Atamert \xd6l\xe7gen'
+__email__ = 'muhuk@muhuk.com'
 
 
 def postgresql_database_check(database_name):
