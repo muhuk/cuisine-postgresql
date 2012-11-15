@@ -38,7 +38,7 @@ def require_fabric(f):
 
 @require_fabric
 def postgresql_database_check(database_name):
-    cmd = 'psql -U postgres -l | grep \'{0}  *|\''.format(database_name)
+    cmd = 'psql -U postgres -l | grep \'\ {0}  *|\''.format(database_name)
     with settings(hide('everything'), warn_only=True):
         return bool(run_as_postgres(cmd))
 
