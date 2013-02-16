@@ -38,11 +38,9 @@ def require_fabric(f):
 
 @require_fabric
 def postgresql_database_check(database_name):
-    cmd = ('psql -tAc "select 1 from pg_database where datname = \'{}\'"'
-           .format(database_name))
+    cmd = 'psql -tAc "SELECT 1 FROM pg_database WHERE datname = \'{}\'"'.format(database_name)
     with settings(hide('everything'), warn_only=True):
-        result = run_as_postgres(cmd)
-    return result == '1'
+        return run_as_postgres(cmd) == '1'
 
 
 @require_fabric
@@ -87,11 +85,9 @@ def postgresql_database_ensure(database_name,
 
 @require_fabric
 def postgresql_role_check(username):
-    cmd = ('psql -tAc "select 1 from pg_roles where rolname = \'{}\'"'
-           .format(username))
+    cmd = 'psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = \'{}\'"'.format(username)
     with settings(hide('everything'), warn_only=True):
-        result = run_as_postgres(cmd)
-    return result == '1'
+        return run_as_postgres(cmd) == '1'
 
 
 @require_fabric
