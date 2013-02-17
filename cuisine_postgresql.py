@@ -38,9 +38,9 @@ def require_fabric(f):
 
 @require_fabric
 def postgresql_database_check(database_name):
-    cmd = 'psql -U postgres -l | grep \'\ {0}  *|\''.format(database_name)
+    cmd = 'psql -tAc "SELECT 1 FROM pg_database WHERE datname = \'{}\'"'.format(database_name)
     with settings(hide('everything'), warn_only=True):
-        return bool(run_as_postgres(cmd))
+        return run_as_postgres(cmd) == '1'
 
 
 @require_fabric
@@ -85,9 +85,9 @@ def postgresql_database_ensure(database_name,
 
 @require_fabric
 def postgresql_role_check(username):
-    cmd = 'psql -U postgres -c \'\\du\' | grep \'^  *{0}  *|\''.format(username)
+    cmd = 'psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = \'{}\'"'.format(username)
     with settings(hide('everything'), warn_only=True):
-        return bool(run_as_postgres(cmd))
+        return run_as_postgres(cmd) == '1'
 
 
 @require_fabric
@@ -137,7 +137,7 @@ def run_as_postgres(cmd):
     """
     Run given command as postgres user.
     """
-    # The cd below is needed to aboid the following warning:
+    # The cd below is needed to avoid the following warning:
     #
     #     could not change directory to "/root"
     #
