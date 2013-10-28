@@ -112,6 +112,27 @@ def postgresql_role_create(username,
 
 
 @require_fabric
+def postgresql_role_update(username,
+                           password=None,
+                           superuser=None,
+                           createdb=None,
+                           createrole=None,
+                           inherit=None,
+                           login=None):
+    opts = [
+        '' if superuser is None else 'SUPERUSER' if superuser else 'NOSUPERUSER',
+        '' if createdb is None else 'CREATEDB' if createdb else 'NOCREATEDB',
+        '' if createrole is None else 'CREATEROLE' if createrole else 'NOCREATEROLE',
+        '' if inherit is None else 'INHERIT' if inherit else 'NOINHERIT',
+        '' if login is None else 'LOGIN' if login else 'NOLOGIN',
+        '' if password is None else 'PASSWORD \'{password}\''.format(password=password)
+    ]
+    sql = 'ALTER ROLE {username} WITH {opts} '
+    sql = sql.format(username=username, opts=' '.join(opts))
+    cmd = 'psql -c "{0}"'.format(sql)
+    return run_as_postgres(cmd) 
+
+@require_fabric
 def postgresql_role_ensure(username,
                            password,
                            superuser=False,
@@ -120,7 +141,14 @@ def postgresql_role_ensure(username,
                            inherit=True,
                            login=True):
     if postgresql_role_check(username):
-        puts('Role "{0}" exists.'.format(username))
+        puts('Role "{0}" exists. Updating attributes ...'.format(username))
+        postgresql_role_update(username,
+                               password,
+                               superuser,
+                               createdb,
+                               createrole,
+                               inherit,
+                               login)
     else:
         puts('Role "{0}" doesn\'t exist. Creating...'.format(username))
         postgresql_role_create(username,
