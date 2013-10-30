@@ -44,6 +44,14 @@ def postgresql_database_check(database_name):
 
 
 @require_fabric
+def postgresql_database_drop(database_name):
+    cmd = 'dropdb -U postgres {database_name}'.format(
+        database_name=database_name,
+    )
+    run_as_postgres(cmd)
+
+
+@require_fabric
 def postgresql_database_create(database_name,
                                tablespace=None,
                                locale=None,
