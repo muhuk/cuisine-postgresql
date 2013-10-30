@@ -52,6 +52,13 @@ def postgresql_database_drop(database_name):
 
 
 @require_fabric
+def postgresql_database_check_empty(database_name):
+    cmd = 'psql -d {} -tAc "\d"'
+    with settings(hide('everything'), warn_only=True):
+        return run_as_postgres(cmd.format(database_name)) == 'No relations found.'
+
+
+@require_fabric
 def postgresql_database_create(database_name,
                                tablespace=None,
                                locale=None,
