@@ -44,18 +44,37 @@ def postgresql_database_check(database_name):
 
 
 @require_fabric
-def postgresql_database_drop(database_name):
-    cmd = 'dropdb -U postgres {database_name}'.format(
-        database_name=database_name,
-    )
-    run_as_postgres(cmd)
-
-
-@require_fabric
-def postgresql_database_check_empty(database_name):
-    cmd = 'psql -d {} -tAc "\d"'
-    with settings(hide('everything'), warn_only=True):
-        return run_as_postgres(cmd.format(database_name)) == 'No relations found.'
+def postgresql_database_update(database_name,
+                               tablespace=None,
+                               locale=None,
+                               encoding=None,
+                               owner=None,
+                               template=None,
+                               warn_only=False,
+                               force=True):
+    if postgresql_database_check_empty(database_name) or force:
+        postgresql_database_drop(database_name)
+        postgresql_database_create(database_name, 
+                                   tablespace, 
+                                   locale,
+                                   encoding,
+                                   owner,
+                                   template) 
+    else:
+        if tablespace:
+            cmd = 'psql -tAc "ATLER TABLE {database_name} SET TABLESPACE {tablespace}"'
+            with settings(hide('everything'), warn_only=True):
+                run_as_postgres(cmd.format(
+                    database_name=database_name,
+                    tablespace=tablespace
+                )
+                puts('Updating tablespace to "{0}"'.format(tablespace))
+        if locale:
+            pass
+        if encoding:
+            pass
+        if owner:
+            pass:
 
 
 @require_fabric
