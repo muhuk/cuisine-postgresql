@@ -39,8 +39,7 @@ def require_fabric(f):
 @require_fabric
 def postgresql_database_check(database_name):
     cmd = 'psql -tAc "SELECT 1 FROM pg_database WHERE datname = \'{}\'"'
-    with settings(hide('everything'), warn_only=True):
-        return run_as_postgres(cmd.format(database_name)) == '1'
+    return run_as_postgres_hidden(cmd.format(database_name)) == '1'
 
 
 @require_fabric
@@ -49,32 +48,43 @@ def postgresql_database_update(database_name,
                                locale=None,
                                encoding=None,
                                owner=None,
-                               template=None,
-                               warn_only=False,
-                               force=True):
-    if postgresql_database_check_empty(database_name) or force:
-        postgresql_database_drop(database_name)
-        postgresql_database_create(database_name, 
-                                   tablespace, 
-                                   locale,
-                                   encoding,
-                                   owner,
-                                   template) 
-    else:
-        if tablespace:
-            cmd = 'psql -tAc "ATLER TABLE {database_name} SET TABLESPACE {tablespace}"'
-            with settings(hide('everything'), warn_only=True):
-                run_as_postgres(cmd.format(
-                    database_name=database_name,
-                    tablespace=tablespace
-                )
-                puts('Updating tablespace to "{0}"'.format(tablespace))
-        if locale:
-            pass
-        if encoding:
-            pass
-        if owner:
-            pass:
+                               warn_only=False):
+    if tablespace:
+        puts('Updating tablespace to "{0}"'.format(tablespace))
+        cmd = 'psql -tAc "ALTER DATABASE {database_name} SET TABLESPACE {tablespace}"'
+        run_as_postgres(cmd.format(
+                database_name=database_name,
+                tablespace=tablespace
+            )
+        )
+    if locale:
+        cmd = 'psql -tAc "SHOW lc_collate" -d {database_name}'
+        old_locale = run_as_postgres_hidden(cmd.format(database_name=database_name))
+        if old_locale != locale:
+            message = 'Trying to ensure %s locale when %s is the actual one.' % (
+                  locale, old_locale)
+            if not warn_only:
+                raise Exception(message)
+            else:
+                puts("WARNING: " + message)
+    if encoding:
+        cmd = 'psql -tAc "SHOW server_encoding" -d {database_name}'
+        old_encoding = run_as_postgres_hidden(cmd.format(database_name=database_name))
+        if old_encoding != encoding:
+            message = 'Trying to ensure %s encoding when %s is the actual one.' % (
+                encoding, old_encoding)
+            if not warn_only:
+                raise Exception(message)
+            else:
+                puts("WARNING: " + message)
+    if owner:
+        puts('Updating owner to "{0}"'.format(owner))
+        cmd = 'psql -tAc "ALTER DATABASE {database_name} OWNER TO {owner}"'
+        run_as_postgres(cmd.format(
+                database_name=database_name,
+                owner=owner
+            )
+        )
 
 
 @require_fabric
@@ -104,9 +114,13 @@ def postgresql_database_ensure(database_name,
                                locale=None,
                                encoding=None,
                                owner=None,
-                               template=None):
+                               template=None,
+                               warn_only=False):
     if postgresql_database_check(database_name):
         puts('Database "{0}" exists.'.format(database_name))
+        postgresql_database_update(
+          database_name, tablespace, locale, encoding,
+          owner, warn_only)
     else:
         puts('Database "{0}" doesn\'t exist. Creating...'.format(database_name))
         postgresql_database_create(database_name,
@@ -120,8 +134,7 @@ def postgresql_database_ensure(database_name,
 @require_fabric
 def postgresql_role_check(username):
     cmd = 'psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = \'{}\'"'
-    with settings(hide('everything'), warn_only=True):
-        return run_as_postgres(cmd.format(username)) == '1'
+    return run_as_postgres_hidden(cmd.format(username)) == '1'
 
 
 @require_fabric
@@ -164,6 +177,12 @@ def postgresql_role_ensure(username,
                                createrole,
                                inherit,
                                login)
+
+
+@require_fabric
+def run_as_postgres_hidden(cmd):
+    with settings(hide('everything'), warn_only=True):
+        return run_as_postgres(cmd)
 
 
 @require_fabric
