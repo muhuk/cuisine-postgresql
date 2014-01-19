@@ -21,7 +21,7 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Utilities',
     ],
-    data_files=[('', ['LICENSE.txt', 'README.rst'])],
+    data_files=[('', ['AUTHORS', 'LICENSE.txt', 'README.rst'])],
     description = 'Cuisine methods for PosgreSQL',
     install_requires = ['cuisine', 'fabric'],
     license = license_text,

@@ -7,7 +7,7 @@ except ImportError:
     __fabric_available = False
 
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 __maintainer__ = u'Atamert \xd6l\xe7gen'
 __email__ = 'muhuk@muhuk.com'
 __all__ = [
@@ -177,7 +177,7 @@ def postgresql_role_update(username,
     sql = 'ALTER ROLE {username} WITH {opts} '
     sql = sql.format(username=username, opts=' '.join(opts))
     cmd = 'psql -c "{0}"'.format(sql)
-    return run_as_postgres(cmd) 
+    return run_as_postgres(cmd)
 
 @require_fabric
 def postgresql_role_ensure(username,
