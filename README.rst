@@ -1,3 +1,6 @@
+.. important:: This project is no longer being maintained!
+
+
 **cuisine-postgresql** provides cuisine-style PostgreSQL management commands.
 
 
